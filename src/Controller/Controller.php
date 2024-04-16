@@ -26,7 +26,7 @@ class Controller extends AbstractController
         $contenido = $request->getContent();
 
         // Decodificar el JSON
-        $datos = json_decode($contenido, true);
+        $datos = json_decode($contenido, true); 
 
         // Devolver una respuesta
         return new JsonResponse($datos);
