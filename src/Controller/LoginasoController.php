@@ -61,24 +61,49 @@ class LoginasoController extends AbstractController
         $email = $data['email'] ?? null;
         $password = $data['password'] ?? null;
         $loginaso = null;
-        if($this->validateData($entityManager,$email,$password)){
-            $loginaso = new Loginaso();
-            $loginaso->setPassword($password);
-            $loginaso->setEmail($email);
-            $entityManager->persist($loginaso);
-            $entityManager->flush();
-            return new JsonResponse("Se ha insertado correctamente.");
+        if($this->validateData($email,$password)){
+            $product = $entityManager->getRepository(Loginaso::class)->findOneBy(['email' => $email]);
+            if ($product === null) {
+                $loginaso = new Loginaso();
+                $loginaso->setPassword($password);
+                $loginaso->setEmail($email);
+                $entityManager->persist($loginaso);
+                $entityManager->flush();
+                return new JsonResponse("Se ha insertado correctamente.");
+            }else{
+                return new JsonResponse("No se ha insertado correctamente, revisa los datos.", 401);
+            }
         } else{
-            return new JsonResponse("No se ha insertado correctamente.", 401);
+            return new JsonResponse("No se ha insertado correctamente, revisa los datos.", 401);
         }
     }
 
-    function validateData(EntityManagerInterface $entityManager ,string $email, string $password): bool {
-        
-        $product = $entityManager->getRepository(Loginaso::class)->findOneBy(['email' => $email]);
-        if ($product !== null) {
-            return false;
+    #[Route('/recibo', name: 'recibir_datos', methods: ['GET', 'POST'])]
+    public function recibirDatos(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $jsonData = $request->getContent();
+        $data = json_decode($jsonData, true);
+        $email = $data['email'] ?? null;
+        $password = $data['password'] ?? null;
+        $loginaso = null;
+        if($this->validateData($email,$password)){
+            $product = $entityManager->getRepository(Loginaso::class)->findOneBy(['email' => $email, 'password' => $password]);
+            if ($product !== null) {
+                $loginaso = new Loginaso();
+                $loginaso->setPassword($password);
+                $loginaso->setEmail($email);
+                return new JsonResponse("Usuario y contraseña correctos");
+            }else{
+                return new JsonResponse("No se ha encontrado un usuario con esos datos.", 401);
+            }
+        } else{
+            return new JsonResponse("Datos incorrectos", 401);
         }
+    }
+
+    function validateData(string $email, string $password): bool {
+        
+        
         // Validar que ninguno de los datos sea más corto de 5 caracteres
         if (strlen($email) < 5 || strlen($password) < 5) {
             return false;

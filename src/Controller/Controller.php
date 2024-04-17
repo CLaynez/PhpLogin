@@ -17,17 +17,4 @@ class Controller extends AbstractController
             'path' => 'esta',
         ]);
     }
-
-    #[Route('/recibo', name: 'recibir_datos', methods: ['GET', 'POST'])]
-    public function recibirDatos(Request $request): JsonResponse
-    {
-        // Obtener los datos enviados en formato JSON
-        $contenido = $request->getContent();
-
-        // Decodificar el JSON
-        $datos = json_decode($contenido, true); 
-
-        // Devolver una respuesta
-        return new JsonResponse($datos);
-    }
 }
