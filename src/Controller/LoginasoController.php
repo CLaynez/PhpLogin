@@ -7,6 +7,7 @@ use App\Form\LoginasoType;
 use App\Repository\LoginasoRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Console\Output\Output;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -60,7 +61,7 @@ class LoginasoController extends AbstractController
         $email = $data['email'] ?? null;
         $password = $data['password'] ?? null;
         $loginaso = null;
-        if($this->validateData($email,$password)){
+        if($this->validateData($entityManager,$email,$password)){
             $loginaso = new Loginaso();
             $loginaso->setPassword($password);
             $loginaso->setEmail($email);
@@ -72,7 +73,12 @@ class LoginasoController extends AbstractController
         }
     }
 
-    function validateData(string $email, string $password): bool {
+    function validateData(EntityManagerInterface $entityManager ,string $email, string $password): bool {
+        
+        $product = $entityManager->getRepository(Loginaso::class)->findOneBy(['email' => $email]);
+        if ($product !== null) {
+            return false;
+        }
         // Validar que ninguno de los datos sea más corto de 5 caracteres
         if (strlen($email) < 5 || strlen($password) < 5) {
             return false;
