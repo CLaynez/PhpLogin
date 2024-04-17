@@ -7,9 +7,11 @@ use App\Form\LoginasoType;
 use App\Repository\LoginasoRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Constraints\Json;
 
 #[Route('/loginaso')]
 class LoginasoController extends AbstractController
@@ -49,6 +51,52 @@ class LoginasoController extends AbstractController
             'loginaso' => $loginaso,
         ]);
     }
+
+    #[Route('/register', name: 'app_loginaso_register', methods: ['GET','POST'])]
+    public function newData(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $jsonData = $request->getContent();
+        $data = json_decode($jsonData, true);
+        $email = $data['email'] ?? null;
+        $password = $data['password'] ?? null;
+        $loginaso = null;
+        if($this->validateData($email,$password)){
+            $loginaso = new Loginaso();
+            $loginaso->setPassword($password);
+            $loginaso->setEmail($email);
+            $entityManager->persist($loginaso);
+            $entityManager->flush();
+            return new JsonResponse("Se ha insertado correctamente.");
+        } else{
+            return new JsonResponse("No se ha insertado correctamente.", 401);
+        }
+    }
+
+    function validateData(string $email, string $password): bool {
+        // Validar que ninguno de los datos sea más corto de 5 caracteres
+        if (strlen($email) < 5 || strlen($password) < 5) {
+            return false;
+        }
+    
+        // Validar que el correo electrónico no sea más largo de 50 caracteres
+        if (strlen($email) > 50) {
+            return false;
+        }
+    
+        // Validar que la contraseña no sea más larga de 20 caracteres
+        if (strlen($password) > 20) {
+            return false;
+        }
+    
+        // Validar la estructura del correo electrónico
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return false;
+        }
+    
+        // Si todas las validaciones pasan, retorna true
+        return true;
+    }
+    
 
     #[Route('/{id}/edit', name: 'app_loginaso_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Loginaso $loginaso, EntityManagerInterface $entityManager): Response

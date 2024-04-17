@@ -5,26 +5,30 @@
 {% block body %}
     <h1>Loginaso</h1>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ loginaso.id }}</td>
-            </tr>
-            <tr>
-                <th>Email</th>
-                <td>{{ loginaso.email }}</td>
-            </tr>
-            <tr>
-                <th>Password</th>
-                <td>{{ loginaso.password }}</td>
-            </tr>
-        </tbody>
-    </table>
+    {% if loginaso is not null %}
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th>Id</th>
+                    <td>{{ loginaso.id }}</td>
+                </tr>
+                <tr>
+                    <th>Email</th>
+                    <td>{{ loginaso.email }}</td>
+                </tr>
+                <tr>
+                    <th>Password</th>
+                    <td>{{ loginaso.password }}</td>
+                </tr>
+            </tbody>
+        </table>
 
-    <a href="{{ path('app_loginaso_index') }}">back to list</a>
+        <a href="{{ path('app_loginaso_index') }}">back to list</a>
 
-    <a href="{{ path('app_loginaso_edit', {'id': loginaso.id}) }}">edit</a>
+        <a href="{{ path('app_loginaso_edit', {'id': loginaso.id}) }}">edit</a>
 
-    {{ include('loginaso/_delete_form.html.twig') }}
+        {{ include('loginaso/_delete_form.html.twig') }}
+    {% else %}
+        <p>No se encontraron datos.</p>
+    {% endif %}
 {% endblock %}

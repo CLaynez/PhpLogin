@@ -3,7 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\LoginasoRepository;
-use Symfony\Component\Validator\Constraint as Assert;
+use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: LoginasoRepository::class)]
@@ -15,9 +15,11 @@ class Loginaso
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
+    #[Assert\NotBlank]
     private string $email = '';
 
     #[ORM\Column(length: 20)]
+    #[Assert\NotBlank]
     private string $password = '';
 
     public function getId(): ?int
