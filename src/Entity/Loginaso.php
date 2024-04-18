@@ -5,9 +5,10 @@ namespace App\Entity;
 use App\Repository\LoginasoRepository;
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: LoginasoRepository::class)]
-class Loginaso
+class Loginaso implements UserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -49,5 +50,19 @@ class Loginaso
         $this->password = $password;
 
         return $this;
+    }
+
+    public function getRoles(): array
+    {
+        return ['ROLE_USER'];
+    }
+
+    public function eraseCredentials()
+    {
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
     }
 }

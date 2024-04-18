@@ -7,16 +7,15 @@ use App\Form\LoginasoType;
 use App\Repository\LoginasoRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Console\Output\Output;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Validator\Constraints\Json;
 
 #[Route('/loginaso')]
 class LoginasoController extends AbstractController
 {
+
     #[Route('/', name: 'app_loginaso_index', methods: ['GET'])]
     public function index(LoginasoRepository $loginasoRepository): Response
     {
@@ -85,14 +84,10 @@ class LoginasoController extends AbstractController
         $data = json_decode($jsonData, true);
         $email = $data['email'] ?? null;
         $password = $data['password'] ?? null;
-        $loginaso = null;
         if($this->validateData($email,$password)){
-            $product = $entityManager->getRepository(Loginaso::class)->findOneBy(['email' => $email, 'password' => $password]);
-            if ($product !== null) {
-                $loginaso = new Loginaso();
-                $loginaso->setPassword($password);
-                $loginaso->setEmail($email);
-                return new JsonResponse("Usuario y contraseña correctos");
+            $usuario = $entityManager->getRepository(Loginaso::class)->findOneBy(['email' => $email, 'password' => $password]);
+            if ($usuario !== null) {
+                return new JsonResponse($usuario);
             }else{
                 return new JsonResponse("No se ha encontrado un usuario con esos datos.", 401);
             }
