@@ -11,12 +11,19 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 #[Route('/loginaso')]
 class LoginasoController extends AbstractController
 {
+    private $JWTEncoder;
+    public function __construct(JWTEncoderInterface $JWTEncoder)
+    {
+        $this->JWTEncoder = $JWTEncoder;
+    }
 
-    #[Route('/', name: 'app_loginaso_index', methods: ['GET'])]
+    #[Route('/all', name: 'app_loginaso_index', methods: ['GET'])]
     public function index(LoginasoRepository $loginasoRepository): Response
     {
         return $this->render('loginaso/index.html.twig', [
@@ -53,7 +60,7 @@ class LoginasoController extends AbstractController
     }
 
     #[Route('/register', name: 'app_loginaso_register', methods: ['GET','POST'])]
-    public function newData(Request $request, EntityManagerInterface $entityManager): Response
+    public function newData(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
         $jsonData = $request->getContent();
         $data = json_decode($jsonData, true);
@@ -64,7 +71,11 @@ class LoginasoController extends AbstractController
             $product = $entityManager->getRepository(Loginaso::class)->findOneBy(['email' => $email]);
             if ($product === null) {
                 $loginaso = new Loginaso();
-                $loginaso->setPassword($password);
+                $hashedPassword = $passwordHasher->hashPassword(
+                    $loginaso,
+                    $password
+                );
+                $loginaso->setPassword($hashedPassword);
                 $loginaso->setEmail($email);
                 $entityManager->persist($loginaso);
                 $entityManager->flush();
@@ -78,26 +89,31 @@ class LoginasoController extends AbstractController
     }
 
     #[Route('/recibo', name: 'recibir_datos', methods: ['GET', 'POST'])]
-    public function recibirDatos(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    public function recibirDatos(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): JsonResponse
     {
         $jsonData = $request->getContent();
         $data = json_decode($jsonData, true);
         $email = $data['email'] ?? null;
         $password = $data['password'] ?? null;
-        if($this->validateData($email,$password)){
-            $usuario = $entityManager->getRepository(Loginaso::class)->findOneBy(['email' => $email, 'password' => $password]);
+        if ($this->validateData($email, $password)) {
+            $usuario = $entityManager->getRepository(Loginaso::class)->findOneBy(['email' => $email]);
             if ($usuario !== null) {
-                return new JsonResponse($usuario);
-            }else{
-                return new JsonResponse("No se ha encontrado un usuario con esos datos.", 401);
+                if ($passwordHasher->isPasswordValid($usuario, $password)) {
+                    $roles = $usuario->getRoles();
+                    $token = $this->JWTEncoder->encode(['email' => $email, 'roles' => $roles]);
+                    return new JsonResponse(['token' => $token]);
+                } else {
+                    return new JsonResponse("Datos incorrectos", 401);
+                }
+            } else {
+                return new JsonResponse("Datos incorrectos", 401);
             }
-        } else{
+        } else {
             return new JsonResponse("Datos incorrectos", 401);
         }
     }
 
     function validateData(string $email, string $password): bool {
-        
         
         // Validar que ninguno de los datos sea más corto de 5 caracteres
         if (strlen($email) < 5 || strlen($password) < 5) {

@@ -3,12 +3,15 @@
 namespace App\Entity;
 
 use App\Repository\LoginasoRepository;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 #[ORM\Entity(repositoryClass: LoginasoRepository::class)]
-class Loginaso implements UserInterface
+#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
+class Loginaso implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -22,6 +25,9 @@ class Loginaso implements UserInterface
     #[ORM\Column(length: 20)]
     #[Assert\NotBlank]
     private string $password = '';
+
+    #[ORM\Column(type: 'boolean')]
+    private $isVerified = false;
 
     public function getId(): ?int
     {
@@ -64,5 +70,17 @@ class Loginaso implements UserInterface
     public function getUserIdentifier(): string
     {
         return $this->email;
+    }
+
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setVerified(bool $isVerified): static
+    {
+        $this->isVerified = $isVerified;
+
+        return $this;
     }
 }
