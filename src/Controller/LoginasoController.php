@@ -68,21 +68,16 @@ class LoginasoController extends AbstractController
         $password = $data['password'] ?? null;
         $loginaso = null;
         if($this->validateData($email,$password)){
-            $product = $entityManager->getRepository(Loginaso::class)->findOneBy(['email' => $email]);
-            if ($product === null) {
-                $loginaso = new Loginaso();
-                $hashedPassword = $passwordHasher->hashPassword(
-                    $loginaso,
-                    $password
-                );
-                $loginaso->setPassword($hashedPassword);
-                $loginaso->setEmail($email);
-                $entityManager->persist($loginaso);
-                $entityManager->flush();
-                return new JsonResponse("Se ha insertado correctamente.");
-            }else{
-                return new JsonResponse("No se ha insertado correctamente, revisa los datos.", 401);
-            }
+            $loginaso = new Loginaso();
+            $hashedPassword = $passwordHasher->hashPassword(
+                $loginaso,
+                $password
+            );
+            $loginaso->setPassword($hashedPassword);
+            $loginaso->setEmail($email);
+            $entityManager->persist($loginaso);
+            $entityManager->flush();
+            return new JsonResponse("Se ha insertado correctamente.");
         } else{
             return new JsonResponse("No se ha insertado correctamente, revisa los datos.", 401);
         }
