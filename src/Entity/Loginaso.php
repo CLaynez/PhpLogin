@@ -24,6 +24,10 @@ class Loginaso implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\NotBlank]
     private string $password = '';
 
+    #[ORM\Column(type: 'array')]
+    #[Assert\NotBlank]
+    private array $roles = [];
+
     public function getId(): ?int
     {
         return $this->id;
@@ -55,8 +59,18 @@ class Loginaso implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        return ['ROLE_USER'];
+        // No se necesita ninguna conversión ya que $roles es un array
+        return $this->roles;
     }
+
+    public function setRoles(array $roles): self
+    {
+        // No hay necesidad de convertir a JSON ya que $roles es un array
+        $this->roles = $roles;
+
+        return $this;
+    }
+
 
     public function eraseCredentials()
     {

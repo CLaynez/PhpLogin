@@ -94,7 +94,7 @@ class LoginasoController extends AbstractController
             $usuario = $entityManager->getRepository(Loginaso::class)->findOneBy(['email' => $email]);
             if ($usuario !== null) {
                 if ($passwordHasher->isPasswordValid($usuario, $password)) {
-                    $roles = $usuario->getRoles();
+                    $roles = $usuario->setRoles(['ROLE_USER']);
                     $token = $this->JWTEncoder->encode(['email' => $email, 'roles' => $roles]);
                     return new JsonResponse(['token' => $token]);
                 } else {
