@@ -6,7 +6,8 @@ security:
             algorithm: auto
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        users_in_memory: { memory: null }
+        users_in_memory: { memory: null }   
+    
     firewalls:
         login:
             pattern: ^/loginaso/recibo
@@ -21,6 +22,7 @@ security:
         main:
             lazy: true
             provider: users_in_memory
+            
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -31,10 +33,10 @@ security:
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
-    access_control:
-        - { path: ^/menu,  roles: ROLE_USER }
-        - { path: ^/loginaso, roles: PUBLIC_ACCESS }
-        - { path: ^/,  roles: ROLE_USER }
+    # access_control:
+    #     - { path: ^/menu,  roles: ROLE_ADMIN }
+    #     - { path: ^/loginaso, roles: PUBLIC_ACCESS }
+    #     - { path: ^/,  roles: ROLE_USER }
 
 when@test:
     security:
